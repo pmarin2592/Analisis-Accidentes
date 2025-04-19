@@ -307,3 +307,154 @@ def insertar_lluvia(provincia, canton, distrito, dia_semana, mes, anio, hora, ll
         if conn:
             conn.close()
 
+def obtener_df_modelo():
+    conn = None
+    cursor = None
+    try:
+        # Función que debes definir tú con tus datos de conexión
+        conn = conectar()
+        cursor = conn.cursor()
+
+        # Consulta SQL
+        query = """
+                   SELECT * FROM dwh.modelo_ml_view;
+                """
+
+        cursor.execute(query)
+        resultados = cursor.fetchall()
+
+        # Obtener nombres de columnas
+        columnas = [desc[0] for desc in cursor.description]
+
+        # Convertir a DataFrame
+        df = pd.DataFrame(resultados, columns=columnas)
+        return df
+
+    except psycopg2.Error as e:
+        if conn:
+            conn.rollback()
+        print(f"Error al consultar la base de datos: {e.pgerror}")
+        return None
+
+    except Exception as e:
+        if conn:
+            conn.rollback()
+        print(f"Error inesperado: {e}")
+        return None
+
+    finally:
+        if cursor:
+            cursor.close()
+        if conn:
+            conn.close()
+
+def obtener_list_provincias():
+    conn = None
+    cursor = None
+    try:
+        # Función que debes definir tú con tus datos de conexión
+        conn = conectar()
+        cursor = conn.cursor()
+
+        # Consulta SQL
+        query = """
+                  SELECT distinct provincia FROM dwh.ubicaciones_tb
+                    ORDER BY 1 ASC;
+                    """
+
+        cursor.execute(query)
+        provincias = [fila[0] for fila in cursor.fetchall()]
+        return provincias
+
+    except psycopg2.Error as e:
+        if conn:
+            conn.rollback()
+        print(f"Error al consultar la base de datos: {e.pgerror}")
+        return None
+
+    except Exception as e:
+        if conn:
+            conn.rollback()
+        print(f"Error inesperado: {e}")
+        return None
+
+    finally:
+        if cursor:
+            cursor.close()
+        if conn:
+            conn.close()
+
+def obtener_list_cantones(provincia):
+    conn = None
+    cursor = None
+    try:
+        # Función que debes definir tú con tus datos de conexión
+        conn = conectar()
+        cursor = conn.cursor()
+
+        # Consulta SQL
+        query = """
+                  SELECT distinct canton FROM dwh.ubicaciones_tb
+                    where provincia = %s
+                    ORDER BY 1 ASC;
+                    """
+
+        cursor.execute(query, (provincia,))
+        cantones = [fila[0] for fila in cursor.fetchall()]
+        return cantones
+
+    except psycopg2.Error as e:
+        if conn:
+            conn.rollback()
+        print(f"Error al consultar la base de datos: {e.pgerror}")
+        return None
+
+    except Exception as e:
+        if conn:
+            conn.rollback()
+        print(f"Error inesperado: {e}")
+        return None
+
+    finally:
+        if cursor:
+            cursor.close()
+        if conn:
+            conn.close()
+
+def obtener_list_distritos(provincia, canton):
+    conn = None
+    cursor = None
+    try:
+        # Función que debes definir tú con tus datos de conexión
+        conn = conectar()
+        cursor = conn.cursor()
+
+        # Consulta SQL
+        query = """
+                  SELECT distinct distrito FROM dwh.ubicaciones_tb
+                    where provincia = %s and canton = %s
+                    ORDER BY 1 ASC 
+                    """
+
+        cursor.execute(query, (provincia,canton))
+        distritos = [fila[0] for fila in cursor.fetchall()]
+        return distritos
+
+    except psycopg2.Error as e:
+        if conn:
+            conn.rollback()
+        print(f"Error al consultar la base de datos: {e.pgerror}")
+        return None
+
+    except Exception as e:
+        if conn:
+            conn.rollback()
+        print(f"Error inesperado: {e}")
+        return None
+
+    finally:
+        if cursor:
+            cursor.close()
+        if conn:
+            conn.close()
+

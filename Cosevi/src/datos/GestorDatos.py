@@ -2,15 +2,21 @@
 from pathlib import Path
 import os
 import pandas as pd
+from basedatos.GestorBaseDatos import GestorBaseDatos
+from api.ClienteAPI import ClienteAPI
 
 class GestorDatos:
     def __init__(self):
         self.df = None
         self.df_transformado = None
-
+        self.BD = GestorBaseDatos()
+        self.API = ClienteAPI()
     def procesar_todo(self):
-        self._procesar_accidentes_victimas()
-        self._procesar_personas_accidentes()
+        if self.BD.validar_data_cargada():
+            self._procesar_accidentes_victimas()
+            self._procesar_personas_accidentes()
+            df=self.BD.carga_ubicaciones()
+            self.API.cargar_lat_lon(df)
 
     def _procesar_accidentes_victimas(self):
         print("Procesando archivo de accidentes con víctimas...")
@@ -19,6 +25,7 @@ class GestorDatos:
         self._transformar_accidentes()
         self.nombre_archivo_salida = "accidentes_victimas_tb.csv"
         self._guardar_datos()
+        self.BD.carga_acidentes_victimnas()
 
     def _procesar_personas_accidentes(self):
         print("Procesando archivo de personas en accidentes...")
@@ -27,6 +34,7 @@ class GestorDatos:
         self._transformar_personas()
         self.nombre_archivo_salida = "base_personas_accidentes_tb.csv"
         self._guardar_datos()
+        self.BD.carga_personas_accidentes()
 
     def _cargar_datos(self, ruta_csv):
         self.df = pd.read_csv(ruta_csv, delimiter=';')
@@ -93,6 +101,8 @@ class GestorDatos:
 
         df['edad'] = df['edad'].replace('Desconocido', None).astype(float).astype('Int64')
         df['edad_quinquenal'] = df['edad_quinquenal'].replace('Desconocida', None)
+        df['sexo'] = df['sexo'].replace('Desconocido', None)
+        df['rol'] = df['rol'].replace('Desconocido', 'Otro')
         df['edad_quinquenal'] = df['edad_quinquenal'].str[2:].str.replace('a', '-', regex=False)
         df['dia_semana'] = df['dia_semana'].str[2:]
         df['mes_anno'] = df['mes_anno'].str[2:]
@@ -102,6 +112,8 @@ class GestorDatos:
             'dia_semana', 'mes_anno', 'anno',
             'provincia', 'canton', 'distrito', 'edad_quinquenal'
         ]
+
+        df = df.dropna()
 
         self.df_transformado = df[columnas_finales]
 

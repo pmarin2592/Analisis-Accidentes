@@ -1,15 +1,40 @@
-# Import de librerias
+from pathlib import Path
 import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
 import plotly.express as px
 import plotly.graph_objects as go
 import io
+import os
 plt.style.use('ggplot')
 
 class ProcesadorEDA:
     def __init__(self, df):
         self.df = df
+
+    @classmethod
+    def carga_accidentes_victimas(cls):
+        BASE_DIR = Path(__file__).resolve().parents[2]
+        csv_path = BASE_DIR / "data" / "processed" / "accidentes_victimas_tb.csv"
+
+        if not os.path.exists(csv_path):
+            raise FileNotFoundError(f"Archivo no encontrado en: {csv_path}")
+
+        df = pd.read_csv(csv_path, sep=';', encoding='utf-8')
+        df.columns = df.columns.str.strip()
+        return cls(df)
+
+    @classmethod
+    def carga_base_personas(cls):
+        BASE_DIR = Path(__file__).resolve().parents[2]
+        csv_path = BASE_DIR / "data" / "processed" / "base_personas_accidentes_tb.csv"
+
+        if not os.path.exists(csv_path):
+            raise FileNotFoundError(f"Archivo no encontrado en: {csv_path}")
+
+        df = pd.read_csv(csv_path, sep=';', encoding='utf-8')
+        df.columns = df.columns.str.strip()
+        return cls(df)
 
     def obtener_info_general(self):
         try:

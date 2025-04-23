@@ -1,3 +1,7 @@
+import os
+from pathlib import Path
+
+import joblib
 import pandas as pd
 import io
 import sys
@@ -110,6 +114,17 @@ class ModeloML:
         buffer = io.StringIO()
         sys_stdout_original = sys.stdout  # Guardar stdout actual
         sys.stdout = buffer  # Redirigir print() al buffer
+
+        # Ruta base del proyecto (2 niveles arriba del archivo actual)
+        BASE_DIR = Path(__file__).resolve().parents[2]
+        modelo_path = BASE_DIR / "data" / "processed" / "modelo_cosevi.pkl"
+
+        # Verificar si el modelo ya existe
+        if os.path.exists(modelo_path):
+            modelo = joblib.load(modelo_path)
+            log =  f"Modelo cargado desde: {modelo_path}"
+            return modelo, log
+
         try:
             df = self.bd.obtener_df_modelo()
             if 'accidente' not in df.columns:
@@ -123,6 +138,8 @@ class ModeloML:
             X['hora'] = pd.to_numeric(X['hora'], errors='coerce')
             mejor = self._analisis_modelo(X, y)
             modelo = self._entrenar_modelo(mejor, X, y)
+            # Guardar el modelo entrenado
+            joblib.dump(modelo, modelo_path)
         finally:
             sys.stdout = sys_stdout_original  # Restaurar stdout
 

@@ -15,7 +15,7 @@ class Visualizador:
         self.ML = ModeloML()
 
 
-    @st.cache_resource
+
     def _cargar_modelo(_self):
         return _self.ML.procesar_modelo_ml()
 
